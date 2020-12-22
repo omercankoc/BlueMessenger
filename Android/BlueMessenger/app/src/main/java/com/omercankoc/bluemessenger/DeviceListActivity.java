@@ -1,13 +1,20 @@
 package com.omercankoc.bluemessenger;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.Set;
 
@@ -33,6 +40,42 @@ public class DeviceListActivity extends AppCompatActivity {
         init();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_device_list,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.menu_scan_devices:
+                scanDevices();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private BroadcastReceiver bluetoothDeviceListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(BluetoothDevice.ACTION_FOUND.equals(action)){
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if(device.getBondState() != BluetoothDevice.BOND_BONDED){
+                    adapterAvailableDevices.add(device.getName() + "\n" + device.getAddress());
+                }
+            } else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+                if(adapterAvailableDevices.getCount() == 0){
+                    Toast.makeText(context,"No new device found!",Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(context,"Click on the device to start the chat!",Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    };
+
     private void init(){
         listViewPairedDevices = findViewById(R.id.listViewPairedDevices);
         listViewAvailableDevices = findViewById(R.id.listViewAvailableDevices);
@@ -51,5 +94,18 @@ public class DeviceListActivity extends AppCompatActivity {
                 adapterPairedDevices.add(device.getName() + "\n" + device.getAddress());
             }
         }
+
+        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(bluetoothDeviceListener,intentFilter);
+        IntentFilter intentFilter1 = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        registerReceiver(bluetoothDeviceListener,intentFilter1);
+    }
+
+    private void scanDevices(){
+        adapterAvailableDevices.clear();
+        if(bluetoothAdapter.isDiscovering()){
+            bluetoothAdapter.cancelDiscovery();
+        }
+        bluetoothAdapter.startDiscovery();
     }
 }
