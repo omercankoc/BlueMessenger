@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MessengerActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    android:gravity="center">
 
     <ListView
         android:id="@+id/listViewMessages"
@@ -18,12 +19,9 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:gravity="center"
+        android:layout_height="50dp"
         android:orientation="horizontal"
-        android:layout_marginRight="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp">
+        android:gravity="center">
 
         <EditText
             android:id="@+id/editTextMessage"
@@ -35,12 +33,13 @@
 
         <Button
             android:id="@+id/buttonSend"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_width="200dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:gravity="center"
             android:text="@string/button_send"
-            android:textSize="18dp"
             android:textColor="@color/black"
+            android:textSize="18dp"
             android:background="@android:color/transparent">
 
         </Button>

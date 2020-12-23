@@ -18,6 +18,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +30,11 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private BluetoothAdapter bluetoothAdapter;
     private ChatClass chatClass;
+
+    private EditText editTextMessage;
+    private Button buttonSend;
+    private ListView listViewMessages;
+    private ArrayAdapter<String> adapterMessages;
 
     private final int LOCATION_PERMISSION_REQUEST = 101;
     private final int SELECT_DEVICE = 102;
@@ -41,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
-        public boolean handleMessage(@NonNull Message message) {
+        public boolean handleMessage(Message message) {
             switch (message.what){
                 case MESSAGE_STATE_CHANGED:
                     switch (message.arg1){
@@ -49,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                             setState("Not Connected!");
                             break;
                         case ChatClass.STATE_LISTEN:
-                            setState("Listening...");
+                            setState("Not Connected...");
                             break;
                         case ChatClass.STATE_CONNECTING:
                             setState("Connecting...");
@@ -58,9 +68,15 @@ public class MainActivity extends AppCompatActivity {
                             setState("Connected " + connectedDevice);
                             break;
                     }
-                case MESSAGE_READ:
-                    break;
                 case MESSAGE_WRITE:
+                    byte[] buffer1 = (byte[]) message.obj;
+                    String outputBuffer = new String(buffer1);
+                    adapterMessages.add("Me: " + outputBuffer);
+                    break;
+                case MESSAGE_READ:
+                    byte[] buffer = (byte[]) message.obj;
+                    String inputBuffer = new String(buffer, 0, message.arg1);
+                    adapterMessages.add(connectedDevice + ": " + inputBuffer);
                     break;
                 case MESSAGE_DEVICE_NAME:
                     connectedDevice = message.getData().getString(DEVICE_NAME);
@@ -68,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case MESSAGE_TOAST:
                     Toast.makeText(context,message.getData().getString(TOAST),Toast.LENGTH_LONG).show();
+                    break;
             }
 
             return false;
@@ -84,15 +101,39 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         context = this;
-        chatClass = new ChatClass(context,handler);
+
+        initialize();
         initBluetooth();
+
+        chatClass = new ChatClass(context,handler);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(chatClass != null){
-            chatClass.stop();
+    private void initialize(){
+        editTextMessage = findViewById(R.id.editTextMessage);
+        buttonSend = findViewById(R.id.buttonSend);
+        listViewMessages = findViewById(R.id.listViewMessages);
+        adapterMessages = new ArrayAdapter<String>(context,R.layout.message_layout);
+        listViewMessages.setAdapter(adapterMessages);
+
+        buttonSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String message = editTextMessage.getText().toString();
+                if(message.isEmpty()){
+                    editTextMessage.setText("");
+                    chatClass.write(message.getBytes());
+                }
+            }
+        });
+    }
+
+    /*
+
+     */
+    private void initBluetooth(){
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null){
+            Toast.makeText(context,"No Bluetooth Found!",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -123,6 +164,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /*
+
+     */
+    private void checkPermission(){
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_PERMISSION_REQUEST);
+        } else {
+            Intent intent = new Intent(context,DeviceListActivity.class);
+            startActivityForResult(intent,SELECT_DEVICE);
+        }
+    }
+
+
+    /*
     DeviceListActivity'den Intent ile gönderilen Device Address bilgisini al.
      */
     @Override
@@ -135,28 +190,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    /*
 
-     */
-    private void initBluetooth(){
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(bluetoothAdapter == null){
-            Toast.makeText(context,"No Bluetooth Found!",Toast.LENGTH_LONG).show();
-        }
-    }
-
-    /*
-
-     */
-    private void checkPermission(){
-        if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_PERMISSION_REQUEST);
-        } else {
-            Intent intent = new Intent(context,DeviceListActivity.class);
-            startActivityForResult(intent,SELECT_DEVICE);
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -202,5 +236,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(chatClass != null){
+            chatClass.stop();
+        }
+    }
 }
