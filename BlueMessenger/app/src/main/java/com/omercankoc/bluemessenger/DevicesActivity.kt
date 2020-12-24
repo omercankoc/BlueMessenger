@@ -10,10 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ArrayAdapter
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import org.w3c.dom.Text
 
 class DevicesActivity : AppCompatActivity() {
@@ -53,12 +51,18 @@ class DevicesActivity : AppCompatActivity() {
         listViewPaired.adapter = adapterPairedDevices
         listViewAvailable.adapter = adapterAvailableDevices
 
+        listViewAvailable.setOnItemClickListener(object : AdapterView.OnItemClickListener{
+            override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+
+            }
+        })
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         var pairedDevices : Set<BluetoothDevice> = bluetoothAdapter.bondedDevices
 
         if(pairedDevices != null && pairedDevices.isNotEmpty()){
             for(device in pairedDevices){
-                adapterPairedDevices.add(device.name + "\n" +device.address)
+                adapterPairedDevices.add(device.name + "\n" + device.address)
             }
         }
 
@@ -77,7 +81,7 @@ class DevicesActivity : AppCompatActivity() {
             if(BluetoothDevice.ACTION_FOUND.equals(action)){
                 var bluetoothDevice : BluetoothDevice? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
                 if(bluetoothDevice?.bondState != BluetoothDevice.BOND_BONDED){
-                    adapterAvailableDevices.add(bluetoothDevice?.name + "/n" + bluetoothDevice?.address)
+                    adapterAvailableDevices.add(bluetoothDevice?.name + "\n" + bluetoothDevice?.address)
                 }
             } else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
                 if(adapterAvailableDevices.count == 0){

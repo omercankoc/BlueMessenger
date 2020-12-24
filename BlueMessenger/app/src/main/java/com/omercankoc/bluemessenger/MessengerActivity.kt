@@ -23,6 +23,7 @@ class MessengerActivity : AppCompatActivity() {
     private lateinit var bluetoothAdapter : BluetoothAdapter
 
     private val LOCATION_PERMISSION_REQUEST : Int = 101
+    private val SELECT_DEVICE :Int = 102
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +75,7 @@ class MessengerActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),LOCATION_PERMISSION_REQUEST)
         } else {
             val intent : Intent = Intent(context,DevicesActivity::class.java)
-            startActivity(intent)
+            startActivityForResult(intent,SELECT_DEVICE)
         }
     }
 
@@ -86,7 +87,7 @@ class MessengerActivity : AppCompatActivity() {
         if(requestCode == LOCATION_PERMISSION_REQUEST){
             if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 val intent : Intent = Intent(context,DevicesActivity::class.java)
-                startActivity(intent)
+                startActivityForResult(intent,SELECT_DEVICE)
             } else {
                 val alertDialog : AlertDialog.Builder = AlertDialog.Builder(this@MessengerActivity)
                 alertDialog.setCancelable(false)
