@@ -1,7 +1,11 @@
 <resources>
     <string name="app_name">Blue Messenger</string>
     <string name="button_send">Send</string>
-    
+
     <string name="menu_search_devices">Search Devices</string>
     <string name="menu_bluetooth_on_off">Bluetooth On Off</string>
+    <string name="menu_devices">Devices</string>
+
+    <string name="text_view_paired">Paired Devices</string>
+    <string name="text_view_available">Available Devices</string>
 </resources>
