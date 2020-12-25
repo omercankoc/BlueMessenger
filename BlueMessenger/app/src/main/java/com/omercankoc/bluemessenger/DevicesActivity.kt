@@ -71,6 +71,7 @@ class DevicesActivity : AppCompatActivity() {
             }
         })
 
+        // 3
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         var pairedDevices : Set<BluetoothDevice> = bluetoothAdapter.bondedDevices
 
