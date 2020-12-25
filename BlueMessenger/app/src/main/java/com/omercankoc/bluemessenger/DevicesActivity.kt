@@ -1,5 +1,6 @@
 package com.omercankoc.bluemessenger
 
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
@@ -8,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -51,9 +53,21 @@ class DevicesActivity : AppCompatActivity() {
         listViewPaired.adapter = adapterPairedDevices
         listViewAvailable.adapter = adapterAvailableDevices
 
+        // 4. ONEMLI
         listViewAvailable.setOnItemClickListener(object : AdapterView.OnItemClickListener{
             override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                //var info : String = view.
+                //var address : String = info.substring(info.length)
 
+                var info : String? = adapterAvailableDevices.getItem(position)
+                var address : String? = info!!.substring(info!!.length - 17)
+
+                Log.d("Address", address!!)
+
+                val intent : Intent = Intent()
+                intent.putExtra("deviceAddress",address)
+                setResult(RESULT_OK,intent)
+                finish()
             }
         })
 
@@ -72,6 +86,33 @@ class DevicesActivity : AppCompatActivity() {
 
         var intentFilterSecond : IntentFilter = IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
         registerReceiver(bluetoothDeviceListener,intentFilterSecond)
+
+        // 3. ONEMLI
+        listViewPaired.setOnItemClickListener(object : AdapterView.OnItemClickListener{
+            override fun onItemClick(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                bluetoothAdapter.cancelDiscovery()
+
+                //var info : String = view.toString()
+                //var address : String = info.substring(info.length)
+
+                var info : String? = adapterAvailableDevices.getItem(position)
+                var address : String? = info!!.substring(info!!.length - 17)
+
+                Log.d("Address", address!!)
+
+                val intent : Intent = Intent()
+                intent.putExtra("deviceAddress",address)
+
+                setResult(Activity.RESULT_OK,intent)
+                finish()
+            }
+
+        })
     }
 
     // 3 : TEHLIKELI
